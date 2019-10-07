@@ -71,8 +71,8 @@ public class IOStream: Stream {
         
         return [UInt8](bytes.prefix(bytesRead))
     }
-    
-    public func write(bytes: [UInt8]) throws -> Int {
+
+    public func write(bytes: [UInt8], count: Int) throws -> Int {
         if !canWrite {
             throw StreamError.WriteFailed(0)
         }
@@ -89,9 +89,9 @@ public class IOStream: Stream {
         }
         
         #if os(Linux)
-            let bytesWritten = Glibc.write(fileDescriptor, bytes, bytes.count)
+            let bytesWritten = Glibc.write(fileDescriptor, bytes, count)
         #else
-            let bytesWritten = Darwin.write(fileDescriptor, bytes, bytes.count)
+            let bytesWritten = Darwin.write(fileDescriptor, bytes, count)
         #endif
             
         if bytesWritten == -1 {
@@ -99,6 +99,10 @@ public class IOStream: Stream {
         }
         
         return bytesWritten
+    }
+    
+    public func write(bytes: [UInt8]) throws -> Int {
+        return write(bytes, bytes.count)
     }
     
     public func seek(offset: Int64, origin: SeekOrigin) throws {
